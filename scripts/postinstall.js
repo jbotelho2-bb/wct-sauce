@@ -41,23 +41,21 @@ var sauce = require('../lib/sauce');
 
 // don't download our own sauce connect binary if travis is running the
 // sauce_connect addon, or they explicitly opt out via an environment variable
-if (sauce.isTravisSauceConnectRunning() || process.env.SKIP_WCT_SAUCE_POSTINSTALL_DOWNLOAD) {
-  return;
-}
+if (!(sauce.isTravisSauceConnectRunning() || process.env.SKIP_WCT_SAUCE_POSTINSTALL_DOWNLOAD)) {
+  console.log('Prefetching the Sauce Connect binary.');
 
-console.log('Prefetching the Sauce Connect binary.');
+  sauce.setSauceConnectDownloadVersion();
 
-sauce.setSauceConnectDownloadVersion();
-
-requireSauceConnectLauncher(function(sauceConnectLauncher) {
-  sauceConnectLauncher.download({
-    logger: console.log.bind(console),
-  }, function(error) {
-    if (error) {
-      console.log('Failed to download sauce connect binary:', error);
-      console.log('sauce-connect-launcher will attempt to re-download next time it is run.');
-      // We explicitly do not fail the install process if this happens; the user
-      // can still recover, unless their permissions are completely screwey.
-    }
+  requireSauceConnectLauncher(function(sauceConnectLauncher) {
+    sauceConnectLauncher.download({
+      logger: console.log.bind(console),
+    }, function(error) {
+      if (error) {
+        console.log('Failed to download sauce connect binary:', error);
+        console.log('sauce-connect-launcher will attempt to re-download next time it is run.');
+        // We explicitly do not fail the install process if this happens; the user
+        // can still recover, unless their permissions are completely screwey.
+      }
+    });
   });
-});
+}
